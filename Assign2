@@ -1,0 +1,58 @@
+
+Namenode :
+ - master daemon
+ - 1 per cluster (1.x)
+ - manages namespace
+ - receives heartbeat from data nodes
+ - namespace has 2 files fsimage & edit_log
+ - fsimage is the initial state of the namespace
+ - edit_log maintains the transactions
+ - Secondary namenode is responsible for checkpointing
+      -merges the fsimage and edit_log to create new fs_image
+ - Co-ordinates with the RM to provide the list of data nodes where specific data is stored
+
+Data Node
+-------
+  - Slave daemon
+  - Responsible for reading and writing of data
+  - 1 per node
+  - sends heartbeat to NN every 3 secs
+  - part of the distributed storage solution
+
+Resource manager
+---------------
+   - Master daemon
+   - mantains the node managers & their resources list
+   - co-ordinates with NN to get details of DNs for the specific jobs
+   - When client contacts the RM for execution of job,
+      instructs one of the NM to initiate the container Application Manager
+   - If the syntax of the job submitted is correct then returns the app_id to client
+   - Receives heartbeat from NMs. In case of NM failure, provides alternative NM details to AM
+
+Node Manager:
+-------------
+   - Slave daemon
+   - part of the distributed processing solution
+   - co-ordinates with AM for initiating the task trackers
+   - sends heartbeat to RM
+   - 1 per node
+
+
+Job execution process
+---------------------
+
+> Client submits the job to RM
+> If the syntax is correct, RM returns app_id for the job
+> After recieving the app_id, client copies the job details (Jar, input file name, output folder name) to distributed cache
+> Job scheduler component of RM informs RM abt the scheduled job
+> RM contacts the NN to get details of available DNs
+    - instructs one of the NM to initiate AM
+> AM contacts RM to get details of NMs to execute the tasks
+>  AM instructs the NM to initate the task container 
+> NM copies logic from DC and initiate task tracker
+> Task tracker sends the heart beats to AM abt the job in progress
+> After all the tasks are finished, AM compiles the results
+> RM instructs the NM to dissolve the AM after the job is finished
+
+
+   
